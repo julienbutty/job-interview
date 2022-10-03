@@ -54,6 +54,26 @@ class ApiController extends AbstractController
         ]);
     }
 
+    #[Route('/specific-contact-cases', name: 'app_specific_contact_cases')]
+    public function showSpecificContactCases(): Response
+    {
+        $contact = $this->getSpecificContact();
+
+        if (empty($contact)) {
+            throw new NotFoundHttpException('Specific user doesn\'t exist');
+        }
+
+        $contactId = $contact->id;
+
+        $contactCases = json_decode($this->sugarApiService->getContactCases($contactId))->records;
+        if (empty($contactCases)) {
+            $contactCases = 'This user has no assigned cases';
+        }
+
+        return $this->json([
+            $contactCases
+        ]);
+    }
     private function getSpecificContact(): \stdClass
     {
         try {

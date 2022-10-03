@@ -71,4 +71,58 @@ class SugarApiService
 
         return $response->getContent();
     }
+
+    public function getContactCases(string $contactId): string
+    {
+        $url = sprintf("/rest/v11_17/Contact/%s/Cases", $contactId);
+        $response = $this->sugarClient->request(
+            'GET',
+            $url,
+            [
+                'auth_bearer' => $this->token,
+            ]
+        );
+
+        return $response->getContent();
+    }
+
+    public function createCase(string $contactId): string
+    {
+        $url = sprintf("/rest/v11_17/Contacts/%s/link/cases", $contactId);
+
+        $ticketRandomName = sprintf("#%s Ticket - Test", random_int(0, 10000));
+
+        $response = $this->sugarClient->request(
+            'POST',
+            $url,
+            [
+                'auth_bearer' => $this->token,
+                'body' => [
+                    "deleted" => false,
+                    "pending_processing" => false,
+                    "portal_viewable" => true,
+                    "is_escalated" => false,
+                    "account_id" => "e78d0e60-3359-11ed-bc7e-067f2945c900",
+                    "assigned_user_id" => "seed_melissa_id",
+                    "priority" => "P1",
+                    "type" => "Administration",
+                    "source" => "",
+                    "status" => "New",
+                    "team_name" => [
+                        [
+                            "id" => "1",
+                            "display_name" => "Global",
+                            "name" => "Global",
+                            "name_2" => "",
+                            "primary" => true,
+                            "selected" => false
+                        ]
+                    ],
+                    "name" => $ticketRandomName
+                ]
+            ]
+        );
+
+        return $response->getContent();
+    }
 }
