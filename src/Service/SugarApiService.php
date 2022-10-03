@@ -37,4 +37,17 @@ class SugarApiService
 
         return $response->toArray()['access_token'];
     }
+
+    public function findAllContacts(): string
+    {
+        $response = $this->sugarClient->request(
+            'GET',
+            '/rest/v11_17/Contacts',
+            [
+                'auth_bearer' => $this->token,
+            ]
+        );
+
+        return $response->getContent();
+    }
 }
