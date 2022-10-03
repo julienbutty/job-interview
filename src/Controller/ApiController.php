@@ -74,6 +74,26 @@ class ApiController extends AbstractController
             $contactCases
         ]);
     }
+
+    #[Route('/create-case', name: 'app_create_case')]
+    public function createCase(): Response
+    {
+        $contact = $this->getSpecificContact();
+        if (empty($contact)) {
+            throw new NotFoundHttpException('Specific user doesn\'t exist');
+        }
+
+        try {
+            $this->sugarApiService->createCase($contact->id);
+        } catch (Exception $e) {
+            throw new \RuntimeException($e->getMessage());
+        }
+
+        return $this->json([
+            "Ticket was successfully created for $contact->full_name"
+        ]);
+    }
+
     private function getSpecificContact(): \stdClass
     {
         try {

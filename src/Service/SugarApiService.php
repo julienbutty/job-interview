@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function random_int;
 
 class SugarApiService
 {
