@@ -34,4 +34,34 @@ class ApiController extends AbstractController
             json_decode($contacts)
         ]);
     }
+
+    #[Route('/specific-contact', name: 'app_specific_contact')]
+    public function showSpecificContact(): Response
+    {
+        $contact = $this->getSpecificContact();
+
+        if (empty($contact)) {
+            throw new NotFoundHttpException('Specific user doesn\'t exist');
+        }
+
+        return $this->json([
+            $contact->first_name,
+            $contact->last_name,
+            $contact->primary_address_street,
+            $contact->primary_address_city,
+            $contact->primary_address_postalcode,
+            $contact->email1,
+        ]);
+    }
+
+    private function getSpecificContact(): \stdClass
+    {
+        try {
+            $contact = reset(json_decode($this->sugarApiService->findSpecificContact())->records);
+        } catch (Exception $e) {
+            throw new \RuntimeException($e->getMessage());
+        }
+
+        return $contact;
+    }
 }
