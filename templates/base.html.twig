@@ -1,19 +1,139 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
-        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
-        {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
-        {% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+          integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <link rel="icon"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+    <script src="https://code.jquery.com/jquery-3.6.1.js"
+            integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="d-flex flex-column mt-5 justify-content-center align-items-center">
+    <form>
+        <div class="form-group">
+            <div class="form-inline">
+                <label for="inputSiren"><h4>Siren (Synolia - 452487416)</h4></label>
+                <input type="text" class="form-control" id="inputSiren"
+                       placeholder="Enter siren">
+                <button type="button" id="resetSiren" class="btn btn-primary mt-3">Reset</button>
+            </div>
+            <div class="form-inline">
+                <label for="inputSiret"><h4>Siret (Synolia - 45248741600060)</h4></label>
+                <input type="text" class="form-control" id="inputSiret"
+                       placeholder="Enter siret">
+                <button type="button" id="resetSiret" class="btn btn-primary mt-3">Reset</button>
+            </div>
+        </div>
+    </form>
+    <hr>
+    <h2> Result</h2>
+    <div class="container"></div>
+</div>
+</body>
+<script>
+    const siretId = '#inputSiret';
+    const sirenId = '#inputSiren';
 
-        {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+    // complete with your token https://api.insee.fr/catalogue/site/themes/wso2/subthemes/insee/pages/help.jag#generer
+    const bearerToken = '';
+
+    $(document).ready(function () {
+
+        $(sirenId).on("change paste keyup click", function (event) {
+            $('#result').remove();
+
+            if (inputHasContent(siretId)) {
+                resetField(siretId);
+            }
+
+            var siren = $(this).val();
+
+            if (siren.length === 9) {
+                var json = getSiren(siren);
+            } else if (siren !== '') {
+                $('.container').append('<pre id="result" style="height: 500px"> Siren must contains 9 chars </pre>');
+            }
+
+            event.preventDefault();
+        });
+
+        $(siretId).on("change paste keyup click", function (event) {
+            $('#result').remove();
+
+            if (inputHasContent(sirenId)) {
+                resetField(sirenId);
+            }
+
+            var siret = $(this).val();
+
+            if (siret.length === 14) {
+                var json = getSiret(siret);
+            } else {
+                $('.container').append('<pre id="result" style="height: 500px"> Siret must contains 13 chars </pre>');
+            }
+
+            event.preventDefault();
+        });
+
+        $("#resetSiren").on("click", function (event) {
+            resetField(sirenId);
+            event.preventDefault();
+        });
+
+        $("#resetSiret").on("click", function (event) {
+            resetField(siretId);
+            event.preventDefault();
+        });
+    });
+
+    function getSiren(siren) {
+        $.ajax({
+            type: 'GET',
+            url: `https://api.insee.fr/entreprises/sirene/V3/siren?q=siren:${siren}`,
+            dataType: 'json',
+            headers: {
+                'Authorization': "Bearer " + bearerToken,
+            },
+            success: function (data) {
+                appendResult('green', JSON.stringify(data, undefined, 2));
+            },
+            error: function () {
+                appendResult('red', "This siren doesn't exist");
+            }
+        });
+    }
+
+    function getSiret(siret) {
+        $.ajax({
+            type: 'GET',
+            url: `https://api.insee.fr/entreprises/sirene/V3/siret/${siret}`,
+            dataType: 'json',
+            headers: {
+                'Authorization': "Bearer " + bearerToken,
+            },
+            success: function (data) {
+                appendResult('green', JSON.stringify(data, undefined, 2));
+            },
+            error: function () {
+                appendResult('red', "This siret doesn't exist");
+            }
+        });
+    }
+
+    function inputHasContent(fieldId) {
+        return $(fieldId).length > 0;
+    }
+
+    function resetField(fieldId) {
+        $(fieldId).val('');
+        $('#result').remove();
+    }
+
+    function appendResult(colorAlert, message) {
+        $('.container').append('<pre id="result" style="color:' + colorAlert + ';">' + message + '</pre>');
+    }
+</script>
 </html>
